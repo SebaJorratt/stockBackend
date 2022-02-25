@@ -150,6 +150,27 @@ router.get('/obtenerDependencia/:id', verificarAuth, (req, res) => {
     })
 })
 
+//Obtener los funcionarios
+router.get('/obtenerFuncionarios', (req, res) => {
+    req.getConnection((err, conn) => {
+        if(err) return res.send(err)
+        conn.query('SELECT f.codFuncionario, f.nomFuncionario, f.correo, f.rut, d.nomDependencia From funcionario as f Left Join dependencia as d ON d.codDependencia = f.codDependencia','',(err, rows)=>{
+            if(err) return res.send(err)
+            res.json(rows)
+        })
+    })
+})
+
+//Obtener un funcionario por su codigo
+router.get('/obtenerFuncionario/:id', (req, res) => {
+    req.getConnection((err, conn) => {
+        if(err) return res.send(err)
+        conn.query('SELECT f.codFuncionario, f.nomFuncionario, f.correo, f.rut, d.nomDependencia From funcionario as f Left Join dependencia as d ON d.codDependencia = f.codDependencia Where f.codFuncionario', req.params.id,(err, rows)=>{
+            if(err) return res.send(err)
+            res.json(rows)
+        })
+    })
+})
 
 /*
 router.post('/agregaUbicacion', verificarAuth, (req,res) => {
