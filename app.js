@@ -19,7 +19,7 @@ const dbOptions ={
   port: 3306,
   user: 'root',
   password: '',
-  database: 'inventario'
+  database: 'stock'
 }
 
 //Middlewares
