@@ -38,7 +38,7 @@ router.post('/agregaFuncionario', (req,res) => {
 router.post('/agregaProducto', (req,res) => {
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
-        conn.query('INSERT INTO producto (codigoBarra, nomProducto, marca, descripcion, stock) VALUES (?,?,?,?,?)',[req.body.codigoBarra, req.body.nomProducto, req.body.marca, req.body.descripcion, req.body.stock], (err, rows)=>{
+        conn.query('INSERT INTO producto (codigoBarra, nomProducto, marca, descripcion, stock) VALUES (?,?,?,?,?)',[req.body.codigoBarra, req.body.nomProducto, req.body.marca, req.body.descripcion, 0], (err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -98,7 +98,7 @@ router.post('/agregaOrdenProducto', (req,res) => {
 router.post('/agregaProductoBodega', (req,res) => {
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
-        conn.query('INSERT INTO prodbodega (stockBodega, stockCritico, nomBodega, codigoBarra) VALUES (?,?,?,?)',[req.body.stockBodega, req.body.nomBodega, req.body.codigoBarra], (err, rows)=>{
+        conn.query('INSERT INTO prodbodega (stockBodega, stockCritico, nomBodega, codigoBarra) VALUES (?,?,?,?)',[req.body.stockBodega, req.body.stockCritico,req.body.nomBodega, req.body.codigoBarra], (err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -110,7 +110,7 @@ router.post('/agregaProductoBodega', (req,res) => {
 router.get('/obtenerProductos', (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
-        conn.query('Select p.nomProducto, p.codigoBarra, p.marca, p.descripcion, p.stock, SUM(bp.stockBodega) as stockBodega From producto as p Left Join prodBodega as bp ON p.codigoBarra = bp.codigoBarra','',(err, rows)=>{
+        conn.query('Select p.nomProducto, p.codigoBarra, p.marca, p.descripcion, p.stock, bp.stockBodega, bp.nomBodega From producto as p Left Join prodBodega as bp ON p.codigoBarra = bp.codigoBarra','',(err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
