@@ -110,7 +110,7 @@ router.post('/agregaProductoBodega', (req,res) => {
 router.get('/obtenerProductos', (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
-        conn.query('Select p.nomProducto, p.codigoBarra, p.marca, p.descripcion, p.stock, bp.stockBodega, bp.nomBodega From producto as p Left Join prodBodega as bp ON p.codigoBarra = bp.codigoBarra','',(err, rows)=>{
+        conn.query('Select p.nomProducto, p.codigoBarra, p.marca, p.descripcion, p.stock, bp.stockBodega, bp.stockCritico, bp.nomBodega From producto as p Left Join prodBodega as bp ON p.codigoBarra = bp.codigoBarra','',(err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -121,7 +121,7 @@ router.get('/obtenerProductos', (req, res) => {
 router.get('/obtenerProductos/:bodega', (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
-        conn.query('Select p.nomProducto, p.codigoBarra, p.marca, p.descripcion, p.stock, SUM(bp.stockBodega) as stockBodega From producto as p Left Join prodBodega as bp ON p.codigoBarra = bp.codigoBarra LEFT JOIN prodbodega as pb ON pb.codigoBarra = p.codigoBarra  WHERE pb.nomBodega = ?',req.params.bodega,(err, rows)=>{
+        conn.query('Select p.nomProducto, p.codigoBarra, p.marca, p.descripcion, p.stock, bp.stockBodega From producto as p Left Join prodBodega as bp ON p.codigoBarra = bp.codigoBarra LEFT JOIN prodbodega as pb ON pb.codigoBarra = p.codigoBarra  WHERE pb.nomBodega = ?',req.params.bodega,(err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -143,7 +143,7 @@ router.get('/obtenerProducto/:id', (req, res) => {
 router.get('/obtenerDependencias', (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
-        conn.query('Select d.codDependencia, d.nomDependencia, d.tipo, u.comuna, u.direccion From dependencia as d Left join ubicacion as u ON u.corrUbicacion = d.corrUbicacion','',(err, rows)=>{
+        conn.query('Select d.codDependencia, d.nomDependencia, d.tipo, u.comuna, u.direccion, d.corrUbicacion From dependencia as d Left join ubicacion as u ON u.corrUbicacion = d.corrUbicacion','',(err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -232,7 +232,7 @@ router.get('/obtenerHistorialesFuncionario/:funcionario', (req, res) => {
 router.get('/obtenerHistorial/:historial', (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
-        conn.query('Select hp.corrHistProd, hp.codigoBarra, hp.cantidad FROM histprod as hp LEFT JOIN historial as h ON h.corrHistorial = hp.corrHistorial WHERE h.corrHistorial = ?',req.params.historial,(err, rows)=>{
+        conn.query('Select hp.corrHistProd, hp.codigoBarra, p.nomProducto, hp.cantidad FROM histprod as hp LEFT JOIN producto as p ON p.codigoBarra = hp.codigoBarra LEFT JOIN historial as h ON h.corrHistorial = hp.corrHistorial WHERE h.corrHistorial = ?',req.params.historial,(err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -265,7 +265,7 @@ router.get('/obtenerOrdenesBodega/:bodega', (req, res) => {
 router.get('/obtenerOrden/:orden', (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
-        conn.query('Select op.corrOrdenProducto, op.codigoBarra, op.cantidad FROM ordenproducto as op LEFT JOIN ordenentrega as o ON o.codOrden = op.codOrden WHERE o.codOrden = ?',req.params.orden,(err, rows)=>{
+        conn.query('Select op.corrOrdenProducto, op.codigoBarra, p.nomProducto, op.cantidad FROM ordenproducto as op LEFT JOIN producto as p ON p.codigoBarra = op.codigoBarra LEFT JOIN ordenentrega as o ON o.codOrden = op.codOrden WHERE o.codOrden = ?',req.params.orden,(err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -374,6 +374,18 @@ router.put('/actualizaStockBodega+/:producto', (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Update prodbodega Set stockBodega = stockBodega + ? Where codigoBarra = ? and nomBodega = ?',[req.body.cantidad, req.params.producto, req.body.nomBodega],(err, rows)=>{
+            if(err) return res.send(err)
+            res.json(rows)
+        })
+    })
+})
+
+//TODAS LAS QUERYS DELETE
+//Eliminar una ubicación 
+router.delete('/eliminarUbicacion/:corr', (req, res) => {
+    req.getConnection((err, conn) => {
+        if(err) return res.send(err)
+        conn.query('Delete FROM ubicacion WHERE corrUbicacion = ',[req.params.corr],(err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
