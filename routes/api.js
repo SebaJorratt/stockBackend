@@ -368,8 +368,8 @@ router.put('/actualizaStock+/:producto', (req, res) => {
     })
 })
 
-//Restar stock de bodega a un producto
-router.put('/actualizaStockBodega+/:producto', (req, res) => {
+//Sumar stock de bodega a un producto
+router.put('/actualizaStockBodegamas/:producto', (req, res) => {
     console.log(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
