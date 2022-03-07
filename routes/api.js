@@ -117,11 +117,22 @@ router.get('/obtenerProductos', (req, res) => {
     })
 })
 
-//Obtener los productos de una bodega 
-router.get('/obtenerProductos/:bodega', (req, res) => {
+//Obtener los productos
+router.get('/obtenerProductosSolos', (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
-        conn.query('Select p.nomProducto, p.codigoBarra, p.marca, p.descripcion, p.stock, bp.stockBodega From producto as p Left Join prodBodega as bp ON p.codigoBarra = bp.codigoBarra LEFT JOIN prodbodega as pb ON pb.codigoBarra = p.codigoBarra  WHERE pb.nomBodega = ?',req.params.bodega,(err, rows)=>{
+        conn.query('Select p.nomProducto, p.codigoBarra, p.marca, p.descripcion, p.stock From producto as p ','',(err, rows)=>{
+            if(err) return res.send(err)
+            res.json(rows)
+        })
+    })
+})
+
+//Obtener los productos de una bodega 
+router.get('/obtenerProductosBodega/:bodega', (req, res) => {
+    req.getConnection((err, conn) => {
+        if(err) return res.send(err)
+        conn.query('Select p.nomProducto, p.codigoBarra, p.marca, p.descripcion, p.stock, bp.stockBodega, bp.stockCritico From producto as p Left Join prodBodega as bp ON bp.codigoBarra = p.codigoBarra WHERE bp.nomBodega = ?',req.params.bodega,(err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -133,6 +144,17 @@ router.get('/obtenerProducto/:id', (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Select * FROM producto Where codigoBarra = ?',req.params.id,(err, rows)=>{
+            if(err) return res.send(err)
+            res.json(rows)
+        })
+    })
+})
+
+//Obtener los datos de un producto de una bodega
+router.get('/obtenerProductoBodega/:id/:nomBodega', (req, res) => {
+    req.getConnection((err, conn) => {
+        if(err) return res.send(err)
+        conn.query('Select stockCritico FROM prodBodega Where codigoBarra = ? and nomBodega = ?',[req.params.id, req.params.nomBodega],(err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -337,7 +359,7 @@ router.put('/editarstockCritico/:producto', (req, res) => {
     console.log(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
-        conn.query('Update prodbodega Set stockCritico = ? Where codigoBarra = ?',[req.body.stockCritico, req.params.producto],(err, rows)=>{
+        conn.query('Update prodbodega Set stockCritico = ? Where codigoBarra = ? and nomBodega = ?',[req.body.stockCritico, req.params.producto, req.body.nomBodega],(err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -357,8 +379,7 @@ router.put('/actualizaStockBodega/:producto', (req, res) => {
 })
 
 //Sumar stock a un producto
-router.put('/actualizaStock+/:producto', (req, res) => {
-    console.log(req.body)
+router.put('/actualizaStockmas/:producto', (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Update producto Set stock = stock + ? Where codigoBarra = ?',[req.body.cantidad, req.params.producto],(err, rows)=>{
