@@ -5,7 +5,7 @@ const router = express.Router();
 //Todas las rutas de POST
 //Agregar una ubicacion
 
-router.post('/agregaUbicacion', (req,res) => {
+router.post('/agregaUbicacion', verificarAuth, (req,res) => {
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
         conn.query('INSERT INTO ubicacion (comuna, direccion) VALUES (?,?)',[req.body.comuna, req.body.direccion], (err, rows)=>{
@@ -15,7 +15,7 @@ router.post('/agregaUbicacion', (req,res) => {
     })
 })
 
-router.post('/agregaDependencia', (req,res) => {
+router.post('/agregaDependencia', verificarAuth, (req,res) => {
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
         conn.query('INSERT INTO dependencia (codDependencia, nomDependencia, tipo, corrUbicacion) VALUES (?,?,?,(SELECT MAX(corrUbicacion) AS corrUbicacion FROM ubicacion))',[req.body.codDependencia, req.body.nomDependencia, req.body.tipo], (err, rows)=>{
@@ -25,7 +25,7 @@ router.post('/agregaDependencia', (req,res) => {
     })
 })
 
-router.post('/agregaFuncionario', (req,res) => {
+router.post('/agregaFuncionario', verificarAuth, (req,res) => {
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
         conn.query('INSERT INTO funcionario (codFuncionario, nomFuncionario, correo, rut, codDependencia) VALUES (?,?,?,?,(Select codDependencia FROM dependencia Where nomDependencia = ?))',[req.body.codFuncionario, req.body.nomFuncionario, req.body.correo, req.body.rut, req.body.nomDependencia], (err, rows)=>{
@@ -35,7 +35,7 @@ router.post('/agregaFuncionario', (req,res) => {
     })
 })
 
-router.post('/agregaProducto', (req,res) => {
+router.post('/agregaProducto', verificarAuth, (req,res) => {
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
         conn.query('INSERT INTO producto (codigoBarra, nomProducto, marca, descripcion, stock) VALUES (?,?,?,?,?)',[req.body.codigoBarra, req.body.nomProducto, req.body.marca, req.body.descripcion, 0], (err, rows)=>{
@@ -45,7 +45,7 @@ router.post('/agregaProducto', (req,res) => {
     })
 })
 
-router.post('/agregaHistorial', (req,res) => {
+router.post('/agregaHistorial', verificarAuth, (req,res) => {
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
         conn.query('INSERT INTO historial (fecha, codFuncionario, codDependencia) VALUES (?,(Select codFuncionario FROM funcionario Where nomFuncionario = ?),(Select codDependencia FROM dependencia Where nomDependencia = ?))',[req.body.fecha, req.body.nomFuncionario, req.body.nomDependencia], (err, rows)=>{
@@ -55,7 +55,7 @@ router.post('/agregaHistorial', (req,res) => {
     })
 })
 
-router.post('/agregahistProd', (req,res) => {
+router.post('/agregahistProd', verificarAuth, (req,res) => {
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
         conn.query('INSERT INTO histprod (cantidad, codigoBarra, corrHistorial) VALUES (?,?,(SELECT MAX(corrHistorial) AS corrHistorial FROM historial))',[req.body.cantidad, req.body.codigoBarra], (err, rows)=>{
@@ -65,7 +65,7 @@ router.post('/agregahistProd', (req,res) => {
     })
 })
 
-router.post('/agregaBodega', (req,res) => {
+router.post('/agregaBodega', verificarAuth, (req,res) => {
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
         conn.query('INSERT INTO bodega (nomBodega) VALUES (?)',[req.body.nomBodega], (err, rows)=>{
@@ -75,7 +75,7 @@ router.post('/agregaBodega', (req,res) => {
     })
 })
 
-router.post('/agregaOrdenEntrega', (req,res) => {
+router.post('/agregaOrdenEntrega', verificarAuth, (req,res) => {
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
         conn.query('INSERT INTO ordenentrega (codOrden, proveedor, fecha, nomBodega) VALUES (?,?,?,?)',[req.body.codOrden, req.body.proveedor, req.body.fecha, req.body.nomBodega], (err, rows)=>{
@@ -85,7 +85,7 @@ router.post('/agregaOrdenEntrega', (req,res) => {
     })
 })
 
-router.post('/agregaOrdenProducto', (req,res) => {
+router.post('/agregaOrdenProducto', verificarAuth, (req,res) => {
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
         conn.query('INSERT INTO ordenproducto (cantidad, codOrden, codigoBarra) VALUES (?,?,?)',[req.body.cantidad, req.body.codOrden, req.body.codigoBarra], (err, rows)=>{
@@ -95,7 +95,7 @@ router.post('/agregaOrdenProducto', (req,res) => {
     })
 })
 
-router.post('/agregaProductoBodega', (req,res) => {
+router.post('/agregaProductoBodega', verificarAuth, (req,res) => {
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
         conn.query('INSERT INTO prodbodega (stockBodega, stockCritico, nomBodega, codigoBarra) VALUES (?,?,?,?)',[req.body.stockBodega, req.body.stockCritico,req.body.nomBodega, req.body.codigoBarra], (err, rows)=>{
@@ -107,7 +107,7 @@ router.post('/agregaProductoBodega', (req,res) => {
 
 //Solicitudes tipo Get
 //Obtener los productos
-router.get('/obtenerProductos', (req, res) => {
+router.get('/obtenerProductos', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Select p.nomProducto, p.codigoBarra, p.marca, p.descripcion, p.stock, bp.stockBodega, bp.stockCritico, bp.nomBodega From producto as p Left Join prodBodega as bp ON p.codigoBarra = bp.codigoBarra','',(err, rows)=>{
@@ -118,7 +118,7 @@ router.get('/obtenerProductos', (req, res) => {
 })
 
 //Obtener los productos
-router.get('/obtenerProductosSolos', (req, res) => {
+router.get('/obtenerProductosSolos', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Select p.nomProducto, p.codigoBarra, p.marca, p.descripcion, p.stock From producto as p ','',(err, rows)=>{
@@ -129,7 +129,7 @@ router.get('/obtenerProductosSolos', (req, res) => {
 })
 
 //Obtener los productos de una bodega 
-router.get('/obtenerProductosBodega/:bodega', (req, res) => {
+router.get('/obtenerProductosBodega/:bodega', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Select p.nomProducto, p.codigoBarra, p.marca, p.descripcion, p.stock, bp.stockBodega, bp.stockCritico From producto as p Left Join prodBodega as bp ON bp.codigoBarra = p.codigoBarra WHERE bp.nomBodega = ?',req.params.bodega,(err, rows)=>{
@@ -140,7 +140,7 @@ router.get('/obtenerProductosBodega/:bodega', (req, res) => {
 })
 
 //Obtener un producto según su código
-router.get('/obtenerProducto/:id', (req, res) => {
+router.get('/obtenerProducto/:id', verificarAuth,  (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Select * FROM producto Where codigoBarra = ?',req.params.id,(err, rows)=>{
@@ -151,7 +151,7 @@ router.get('/obtenerProducto/:id', (req, res) => {
 })
 
 //Obtener los datos de un producto de una bodega
-router.get('/obtenerProductoBodega/:id/:nomBodega', (req, res) => {
+router.get('/obtenerProductoBodega/:id/:nomBodega', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Select stockCritico FROM prodBodega Where codigoBarra = ? and nomBodega = ?',[req.params.id, req.params.nomBodega],(err, rows)=>{
@@ -162,7 +162,7 @@ router.get('/obtenerProductoBodega/:id/:nomBodega', (req, res) => {
 })
 
 //Obtener las dependencias
-router.get('/obtenerDependencias', (req, res) => {
+router.get('/obtenerDependencias', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Select d.codDependencia, d.nomDependencia, d.tipo, u.comuna, u.direccion, d.corrUbicacion From dependencia as d Left join ubicacion as u ON u.corrUbicacion = d.corrUbicacion','',(err, rows)=>{
@@ -173,7 +173,7 @@ router.get('/obtenerDependencias', (req, res) => {
 })
 
 //Obtener una dependencia por su codigo
-router.get('/obtenerDependencia/:id', (req, res) => {
+router.get('/obtenerDependencia/:id', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Select d.codDependencia, d.nomDependencia, d.tipo, u.comuna, u.direccion From dependencia as d Left join ubicacion as u ON u.corrUbicacion = d.corrUbicacion Where codDependencia = ?',req.params.id,(err, rows)=>{
@@ -184,7 +184,7 @@ router.get('/obtenerDependencia/:id', (req, res) => {
 })
 
 //Obtener los funcionarios
-router.get('/obtenerFuncionarios', (req, res) => {
+router.get('/obtenerFuncionarios', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('SELECT f.codFuncionario, f.nomFuncionario, f.correo, f.rut, d.nomDependencia From funcionario as f Left Join dependencia as d ON d.codDependencia = f.codDependencia','',(err, rows)=>{
@@ -195,7 +195,7 @@ router.get('/obtenerFuncionarios', (req, res) => {
 })
 
 //Obtener BODEGAS
-router.get('/obtenerbodegas', (req, res) => {
+router.get('/obtenerbodegas', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('SELECT * FROM bodega','',(err, rows)=>{
@@ -207,7 +207,7 @@ router.get('/obtenerbodegas', (req, res) => {
 
 
 //Obtener un funcionario por su codigo
-router.get('/obtenerFuncionario/:id', (req, res) => {
+router.get('/obtenerFuncionario/:id', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('SELECT f.codFuncionario, f.nomFuncionario, f.correo, f.rut, d.nomDependencia From funcionario as f Left Join dependencia as d ON d.codDependencia = f.codDependencia Where f.codFuncionario', req.params.id,(err, rows)=>{
@@ -218,7 +218,7 @@ router.get('/obtenerFuncionario/:id', (req, res) => {
 })
 
 //Obtener los historiales de un producto
-router.get('/obtenerHistorialesProducto/:producto', (req, res) => {
+router.get('/obtenerHistorialesProducto/:producto', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Select DISTINCT h.corrHistorial, DATE_FORMAT(h.fecha,"%d/%m/%y") as fecha, f.nomFuncionario, d.nomDependencia From historial as h Left Join funcionario as f on f.codFuncionario = h.codFuncionario Left Join dependencia as d on d.codDependencia = h.codDependencia Left JOIN histprod as hp on hp.corrHistorial = h.corrHistorial Where hp.codigoBarra = ?',req.params.producto,(err, rows)=>{
@@ -229,7 +229,7 @@ router.get('/obtenerHistorialesProducto/:producto', (req, res) => {
 })
 
 //Obtener los historiales de una dependencia
-router.get('/obtenerHistorialesDependencia/:dependencia', (req, res) => {
+router.get('/obtenerHistorialesDependencia/:dependencia', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Select DISTINCT h.corrHistorial, DATE_FORMAT(h.fecha,"%d/%m/%y") as fecha, f.nomFuncionario, d.nomDependencia From historial as h Left Join funcionario as f on f.codFuncionario = h.codFuncionario Left Join dependencia as d on d.codDependencia = h.codDependencia Where d.codDependencia = ?',req.params.dependencia,(err, rows)=>{
@@ -240,7 +240,7 @@ router.get('/obtenerHistorialesDependencia/:dependencia', (req, res) => {
 })
 
 //Obtener los historiales de un funcionario
-router.get('/obtenerHistorialesFuncionario/:funcionario', (req, res) => {
+router.get('/obtenerHistorialesFuncionario/:funcionario', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Select DISTINCT h.corrHistorial, DATE_FORMAT(h.fecha,"%d/%m/%y") as fecha, f.nomFuncionario, d.nomDependencia From historial as h Left Join funcionario as f on f.codFuncionario = h.codFuncionario Left Join dependencia as d on d.codDependencia = h.codDependencia Where f.codFuncionario = ?',req.params.funcionario,(err, rows)=>{
@@ -251,7 +251,7 @@ router.get('/obtenerHistorialesFuncionario/:funcionario', (req, res) => {
 })
 
 //Obtener un historial
-router.get('/obtenerHistorial/:historial', (req, res) => {
+router.get('/obtenerHistorial/:historial', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Select hp.corrHistProd, hp.codigoBarra, p.nomProducto, hp.cantidad FROM histprod as hp LEFT JOIN producto as p ON p.codigoBarra = hp.codigoBarra LEFT JOIN historial as h ON h.corrHistorial = hp.corrHistorial WHERE h.corrHistorial = ?',req.params.historial,(err, rows)=>{
@@ -262,7 +262,7 @@ router.get('/obtenerHistorial/:historial', (req, res) => {
 })
 
 //Obtener los historiales de un producto
-router.get('/obtenerOrdenesProducto/:producto', (req, res) => {
+router.get('/obtenerOrdenesProducto/:producto', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Select DISTINCT o.codOrden, o.nomBodega, o.proveedor, DATE_FORMAT(o.fecha,"%d/%m/%y") as fecha From ordenentrega as o Left JOIN ordenproducto as op on op.codOrden = o.codOrden Where op.codigoBarra = ?',req.params.producto,(err, rows)=>{
@@ -273,7 +273,7 @@ router.get('/obtenerOrdenesProducto/:producto', (req, res) => {
 })
 
 //Obtener las Ordenes de una bodega
-router.get('/obtenerOrdenesBodega/:bodega', (req, res) => {
+router.get('/obtenerOrdenesBodega/:bodega', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Select DISTINCT o.codOrden, o.nomBodega, o.proveedor, DATE_FORMAT(o.fecha,"%d/%m/%y") as fecha From ordenentrega as o Where o.nomBodega = ?',req.params.bodega,(err, rows)=>{
@@ -284,7 +284,7 @@ router.get('/obtenerOrdenesBodega/:bodega', (req, res) => {
 })
 
 //Obtener una orden de entrega
-router.get('/obtenerOrden/:orden', (req, res) => {
+router.get('/obtenerOrden/:orden', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Select op.corrOrdenProducto, op.codigoBarra, p.nomProducto, op.cantidad FROM ordenproducto as op LEFT JOIN producto as p ON p.codigoBarra = op.codigoBarra LEFT JOIN ordenentrega as o ON o.codOrden = op.codOrden WHERE o.codOrden = ?',req.params.orden,(err, rows)=>{
@@ -295,7 +295,7 @@ router.get('/obtenerOrden/:orden', (req, res) => {
 })
 
 //COMPARAR STOCKS
-router.get('/CompararStock', (req, res) => {
+router.get('/CompararStock', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Select stockBodega, stock FROM prodbodega Where nomBodega = ? and codigoBarra = ?',[req.body.nomBodega, req.body.codigoBarra],(err, rows)=>{
@@ -307,7 +307,7 @@ router.get('/CompararStock', (req, res) => {
 
 //PUT ACTUALIZAR ENTIDADES
 //Restar stock a un producto
-router.put('/actualizaStock/:producto', (req, res) => {
+router.put('/actualizaStock/:producto', verificarAuth, (req, res) => {
     console.log(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
@@ -319,7 +319,7 @@ router.put('/actualizaStock/:producto', (req, res) => {
 })
 
 //Editar un producto
-router.put('/editarProducto/:producto', (req, res) => {
+router.put('/editarProducto/:producto', verificarAuth, (req, res) => {
     console.log(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
@@ -331,7 +331,7 @@ router.put('/editarProducto/:producto', (req, res) => {
 })
 
 //Actualizar Dependencia
-router.put('/editarDependencia/:dependencia', (req, res) => {
+router.put('/editarDependencia/:dependencia', verificarAuth,  (req, res) => {
     console.log(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
@@ -343,7 +343,7 @@ router.put('/editarDependencia/:dependencia', (req, res) => {
 })
 
 //Actualizar Dependencia
-router.put('/editarFuncionario/:funcionario', (req, res) => {
+router.put('/editarFuncionario/:funcionario', verificarAuth, (req, res) => {
     console.log(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
@@ -355,7 +355,7 @@ router.put('/editarFuncionario/:funcionario', (req, res) => {
 })
 
 //Actualizar StockCritico
-router.put('/editarstockCritico/:producto', (req, res) => {
+router.put('/editarstockCritico/:producto', verificarAuth, (req, res) => {
     console.log(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
@@ -367,7 +367,7 @@ router.put('/editarstockCritico/:producto', (req, res) => {
 })
 
 //Restar stock de bodega a un producto
-router.put('/actualizaStockBodega/:producto', (req, res) => {
+router.put('/actualizaStockBodega/:producto', verificarAuth, (req, res) => {
     console.log(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
@@ -379,7 +379,7 @@ router.put('/actualizaStockBodega/:producto', (req, res) => {
 })
 
 //Sumar stock a un producto
-router.put('/actualizaStockmas/:producto', (req, res) => {
+router.put('/actualizaStockmas/:producto', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Update producto Set stock = stock + ? Where codigoBarra = ?',[req.body.cantidad, req.params.producto],(err, rows)=>{
@@ -390,7 +390,7 @@ router.put('/actualizaStockmas/:producto', (req, res) => {
 })
 
 //Sumar stock de bodega a un producto
-router.put('/actualizaStockBodegamas/:producto', (req, res) => {
+router.put('/actualizaStockBodegamas/:producto', verificarAuth, (req, res) => {
     console.log(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
@@ -403,7 +403,7 @@ router.put('/actualizaStockBodegamas/:producto', (req, res) => {
 
 //TODAS LAS QUERYS DELETE
 //Eliminar una ubicación 
-router.delete('/eliminarUbicacion/:corr', (req, res) => {
+router.delete('/eliminarUbicacion/:corr', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Delete FROM ubicacion WHERE corrUbicacion = ?',req.params.corr,(err, rows)=>{
