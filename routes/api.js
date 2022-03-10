@@ -28,7 +28,7 @@ router.post('/agregaDependencia', verificarAuth, (req,res) => {
 router.post('/agregaFuncionario', verificarAuth, (req,res) => {
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
-        conn.query('INSERT INTO funcionario (codFuncionario, nomFuncionario, correo, rut, codDependencia) VALUES (?,?,?,?,(Select codDependencia FROM dependencia Where nomDependencia = ?))',[req.body.codFuncionario, req.body.nomFuncionario, req.body.correo, req.body.rut, req.body.nomDependencia], (err, rows)=>{
+        conn.query('INSERT INTO funcionario (codFuncionario, nomFuncionario, correo, rut, encargado, codDependencia) VALUES (?,?,?,?,?,(Select codDependencia FROM dependencia Where nomDependencia = ?))',[req.body.codFuncionario, req.body.nomFuncionario, req.body.correo, req.body.rut, req.body.encargado,req.body.nomDependencia], (err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -187,7 +187,18 @@ router.get('/obtenerDependencia/:id', verificarAuth, (req, res) => {
 router.get('/obtenerFuncionarios', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
-        conn.query('SELECT f.codFuncionario, f.nomFuncionario, f.correo, f.rut, d.nomDependencia From funcionario as f Left Join dependencia as d ON d.codDependencia = f.codDependencia','',(err, rows)=>{
+        conn.query('SELECT f.codFuncionario, f.nomFuncionario, f.correo, f.rut, f.encargado, d.nomDependencia From funcionario as f Left Join dependencia as d ON d.codDependencia = f.codDependencia','',(err, rows)=>{
+            if(err) return res.send(err)
+            res.json(rows)
+        })
+    })
+})
+
+//OBTENER FUNCIONARIOS ENCARGADOS DE UNA DEPENDENCIAS PARA VISTA ENTREGA DE INSUMOS
+router.get('/obtenerFuncionarioDep/:dependencia', verificarAuth, (req, res) => {
+    req.getConnection((err, conn) => {
+        if(err) return res.send(err)
+        conn.query('SELECT f.codFuncionario, f.nomFuncionario, f.correo, f.rut, f.encargado, d.nomDependencia From funcionario as f Left Join dependencia as d ON d.codDependencia = f.codDependencia Where d.nomDependencia = ? and f.encargado = 1',req.params.dependencia,(err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -347,7 +358,7 @@ router.put('/editarFuncionario/:funcionario', verificarAuth, (req, res) => {
     console.log(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
-        conn.query('Update funcionario Set nomFuncionario = ?, correo = ?, rut = ?, codDependencia = (Select codDependencia FROM dependencia Where nomDependencia = ?) Where codFuncionario = ?',[req.body.nomFuncionario, req.body.correo, req.body.rut, req.body.nomDependencia, req.params.funcionario],(err, rows)=>{
+        conn.query('Update funcionario Set nomFuncionario = ?, correo = ?, rut = ?, encargado = ?, codDependencia = (Select codDependencia FROM dependencia Where nomDependencia = ?) Where codFuncionario = ?',[req.body.nomFuncionario, req.body.correo, req.body.rut, req.body.encargado, req.body.nomDependencia, req.params.funcionario],(err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -356,7 +367,6 @@ router.put('/editarFuncionario/:funcionario', verificarAuth, (req, res) => {
 
 //Actualizar StockCritico
 router.put('/editarstockCritico/:producto', verificarAuth, (req, res) => {
-    console.log(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Update prodbodega Set stockCritico = ? Where codigoBarra = ? and nomBodega = ?',[req.body.stockCritico, req.params.producto, req.body.nomBodega],(err, rows)=>{
