@@ -2,6 +2,10 @@ import express from 'express'
 import { verificarAuth, verificarAdmin } from '../middlewares/autenticacion';
 const router = express.Router();
 
+import XlsxTemplate from 'xlsx-template';
+import fs from 'fs';
+import path from 'path';
+
 //Todas las rutas de POST
 //Agregar una ubicacion
 
@@ -421,6 +425,34 @@ router.delete('/eliminarUbicacion/:corr', verificarAuth, (req, res) => {
             res.json(rows)
         })
     })
+})
+
+//Obtener excel con nuevos datos
+router.post('/obtenerMemo', verificarAuth, (req, res) => {
+    fs.readFile(path.join('D:/inventarioInformatico/stock/stockBackend/public/test.xlsx'), function(err, data) {
+        console.log(data)
+        // Create a template
+        var template = new XlsxTemplate(data);
+
+        // Replacements take place on first sheet
+        var sheetNumber = 1;
+
+        // Set up some placeholder values matching the placeholders in the template
+        var values = {
+                people: [
+                    {name: "John Smith", age: 20},
+                    {name: "Bob Johnson", age: 22}
+                ]
+            };
+
+        // Perform substitution
+        template.substitute(sheetNumber, values);
+
+        // Get binary data
+        var data = template.generate();
+        res.json(data)
+    });
+
 })
 
 module.exports = router;

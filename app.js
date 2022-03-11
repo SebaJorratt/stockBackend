@@ -4,6 +4,7 @@ import cors from 'cors';
 import path from 'path';
 import mysql from 'mysql';
 import myconn from 'express-myconnection';
+import XlsxTemplate from 'xlsx-template';
 
 const app = express();
 
