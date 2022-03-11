@@ -439,10 +439,7 @@ router.post('/obtenerMemo', verificarAuth, (req, res) => {
 
         // Set up some placeholder values matching the placeholders in the template
         var values = {
-                people: [
-                    {name: "John Smith", age: 20},
-                    {name: "Bob Johnson", age: 22}
-                ]
+                name: "Bob Johnson"
             };
 
         // Perform substitution
@@ -450,7 +447,7 @@ router.post('/obtenerMemo', verificarAuth, (req, res) => {
 
         // Get binary data
         var data = template.generate();
-        res.json(data)
+        fs.writeFileSync('D:/inventarioInformatico/stock/stockBackend/public/test1.xlsx', data, 'binary');
     });
 
 })
