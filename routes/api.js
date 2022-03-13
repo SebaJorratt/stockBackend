@@ -430,7 +430,6 @@ router.delete('/eliminarUbicacion/:corr', verificarAuth, (req, res) => {
 //Obtener excel con nuevos datos
 router.post('/obtenerMemo', verificarAuth, (req, res) => {
     fs.readFile(path.join('D:/inventarioInformatico/stock/stockBackend/public/test.xlsx'), function(err, data) {
-        console.log(data)
         // Create a template
         var template = new XlsxTemplate(data);
 
@@ -439,15 +438,19 @@ router.post('/obtenerMemo', verificarAuth, (req, res) => {
 
         // Set up some placeholder values matching the placeholders in the template
         var values = {
-                name: "Bob Johnson"
-            };
+            people: [
+                {name: "Bob Johnson"},
+                {name: "HOLA XD"}
+            ]
+        };
 
         // Perform substitution
         template.substitute(sheetNumber, values);
 
         // Get binary data
         var data = template.generate();
-        fs.writeFileSync('D:/inventarioInformatico/stock/stockBackend/public/test1.xlsx', data, 'binary');
+        res.json(data)
+        //fs.writeFileSync('D:/inventarioInformatico/stock/stockBackend/public/test1.xlsx', data, 'binary');
     });
 
 })
