@@ -42,7 +42,7 @@ router.post('/agregaFuncionario', verificarAuth, (req,res) => {
 router.post('/agregaProducto', verificarAuth, (req,res) => {
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
-        conn.query('INSERT INTO producto (codigoBarra, nomProducto, marca, descripcion, stock) VALUES (?,?,?,?,?)',[req.body.codigoBarra, req.body.nomProducto, req.body.marca, req.body.descripcion, 0], (err, rows)=>{
+        conn.query('INSERT INTO producto (codigoBarra, nomProducto, marca, descripcion, stock) VALUES (?,?,?,?,?)',[req.body.codigoBarra, req.body.nomProducto, req.body.marca, req.body.descripcion, req.body.stock], (err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -429,7 +429,8 @@ router.delete('/eliminarUbicacion/:corr', verificarAuth, (req, res) => {
 
 //Obtener excel con nuevos datos
 router.post('/obtenerMemo', verificarAuth, (req, res) => {
-    fs.readFile(path.join('D:/inventarioInformatico/stock/stockBackend/public/test.xlsx'), function(err, data) {
+    console.log(req.body)
+    fs.readFile(path.join(__dirname, '../public', 'test.xlsx'), function(err, data) {
         // Create a template
         var template = new XlsxTemplate(data);
 
@@ -438,10 +439,11 @@ router.post('/obtenerMemo', verificarAuth, (req, res) => {
 
         // Set up some placeholder values matching the placeholders in the template
         var values = {
-            people: [
-                {name: "Bob Johnson"},
-                {name: "HOLA XD"}
-            ]
+            productos: req.body.productos,
+            dependencia: req.body.dependencia,
+            codDependencia: req.body.codDependencia,
+            comuna: req.body.comuna,
+            fecha: req.body.fecha
         };
 
         // Perform substitution
@@ -451,7 +453,7 @@ router.post('/obtenerMemo', verificarAuth, (req, res) => {
         var data = template.generate();
         res.json(data)
         //fs.writeFileSync('D:/inventarioInformatico/stock/stockBackend/public/test1.xlsx', data, 'binary');
-    });
+    }); 
 
 })
 
