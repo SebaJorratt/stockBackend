@@ -450,11 +450,10 @@ router.delete('/eliminarUbicacion/:corr', verificarAuth, (req, res) => {
 
 //Obtener excel con nuevos datos
 router.post('/obtenerMemo', verificarAuth, (req, res) => {
-    console.log(req.body)
     fs.readFile(path.join(__dirname, '../public', 'test.xlsx'), function(err, data) {
         // Create a template
         var template = new XlsxTemplate(data);
-
+        console.log(req.body)
         // Replacements take place on first sheet
         var sheetNumber = 1;
 
@@ -464,7 +463,10 @@ router.post('/obtenerMemo', verificarAuth, (req, res) => {
             dependencia: req.body.dependencia,
             codDependencia: req.body.codDependencia,
             comuna: req.body.comuna,
-            fecha: req.body.fecha
+            fecha: req.body.fecha,
+            referencia: req.body.referencia,
+            ticket: req.body.ticket,
+            memo: req.body.memo
         };
 
         // Perform substitution
@@ -475,7 +477,6 @@ router.post('/obtenerMemo', verificarAuth, (req, res) => {
         res.json(data)
         //fs.writeFileSync('D:/inventarioInformatico/stock/stockBackend/public/test1.xlsx', data, 'binary');
     }); 
-
 })
 
 module.exports = router;
