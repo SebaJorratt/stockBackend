@@ -49,10 +49,31 @@ router.post('/agregaProducto', verificarAuth, (req,res) => {
     })
 })
 
+//GET PARA OBTENER EL ULTIMO MEMO
+router.get('/obtenerUltimoMemo', verificarAuth, (req, res) => {
+    req.getConnection((err, conn) => {
+        if(err) return res.send(err)
+        conn.query('SELECT MAX(memo) AS memo FROM historial','',(err, rows)=>{
+            if(err){
+                return res.status(400).json({
+                    mensaje: 'Error del sistema'
+                })
+            }
+            else if(rows.length > 0){
+                res.json(rows)
+            }
+            else{
+                res.json({memo: 1})
+            }
+            
+        })
+    })
+})
+
 router.post('/agregaHistorial', verificarAuth, (req,res) => {
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
-        conn.query('INSERT INTO historial (fecha, codFuncionario, codDependencia) VALUES (?,(Select codFuncionario FROM funcionario Where nomFuncionario = ?),(Select codDependencia FROM dependencia Where nomDependencia = ?))',[req.body.fecha, req.body.nomFuncionario, req.body.nomDependencia], (err, rows)=>{
+        conn.query('INSERT INTO historial (fecha, codFuncionario, codDependencia,memo) VALUES (?,(Select codFuncionario FROM funcionario Where nomFuncionario = ?),(Select codDependencia FROM dependencia Where nomDependencia = ?), ?)',[req.body.fecha, req.body.nomFuncionario, req.body.nomDependencia, req.body.memo], (err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -269,7 +290,7 @@ router.get('/obtenerHistorialesFuncionario/:funcionario', verificarAuth, (req, r
 router.get('/obtenerHistorial/:historial', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
-        conn.query('Select hp.corrHistProd, hp.codigoBarra, p.nomProducto, hp.cantidad FROM histprod as hp LEFT JOIN producto as p ON p.codigoBarra = hp.codigoBarra LEFT JOIN historial as h ON h.corrHistorial = hp.corrHistorial WHERE h.corrHistorial = ?',req.params.historial,(err, rows)=>{
+        conn.query('Select hp.corrHistProd, hp.codigoBarra, p.nomProducto, hp.cantidad, h.memo FROM histprod as hp LEFT JOIN producto as p ON p.codigoBarra = hp.codigoBarra LEFT JOIN historial as h ON h.corrHistorial = hp.corrHistorial WHERE h.corrHistorial = ?',req.params.historial,(err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })

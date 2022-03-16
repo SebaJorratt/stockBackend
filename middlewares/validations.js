@@ -1,5 +1,5 @@
 
-function UsuarioValidate(data, next){
+function UsuarioValidate(data){
     if(typeof data.nomUsuario !== 'string'){
         throw new Error('El nombre debe contener solo letras')
     }
