@@ -135,7 +135,7 @@ router.post('/agregaProductoBodega', verificarAuth, (req,res) => {
 router.get('/obtenerProductos', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
-        conn.query('Select p.nomProducto, p.codigoBarra, p.marca, p.descripcion, p.stock, bp.stockBodega, bp.stockCritico, bp.nomBodega From producto as p Left Join prodBodega as bp ON p.codigoBarra = bp.codigoBarra','',(err, rows)=>{
+        conn.query('Select DISTINCT p.nomProducto, p.codigoBarra, p.marca, p.descripcion, p.stock, bp.stockBodega, bp.stockCritico, bp.nomBodega From producto as p Left Join prodBodega as bp ON p.codigoBarra = bp.codigoBarra','',(err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -257,7 +257,7 @@ router.get('/obtenerFuncionario/:id', verificarAuth, (req, res) => {
 router.get('/obtenerHistorialesProducto/:producto', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
-        conn.query('Select DISTINCT h.corrHistorial, DATE_FORMAT(h.fecha,"%d/%m/%y") as fecha, f.nomFuncionario, d.nomDependencia From historial as h Left Join funcionario as f on f.codFuncionario = h.codFuncionario Left Join dependencia as d on d.codDependencia = h.codDependencia Left JOIN histprod as hp on hp.corrHistorial = h.corrHistorial Where hp.codigoBarra = ?',req.params.producto,(err, rows)=>{
+        conn.query('Select DISTINCT h.corrHistorial, DATE_FORMAT(h.fecha,"%d/%m/%y") as fecha, f.nomFuncionario, d.nomDependencia, h.memo From historial as h Left Join funcionario as f on f.codFuncionario = h.codFuncionario Left Join dependencia as d on d.codDependencia = h.codDependencia Left JOIN histprod as hp on hp.corrHistorial = h.corrHistorial Where hp.codigoBarra = ?',req.params.producto,(err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -268,7 +268,7 @@ router.get('/obtenerHistorialesProducto/:producto', verificarAuth, (req, res) =>
 router.get('/obtenerHistorialesDependencia/:dependencia', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
-        conn.query('Select DISTINCT h.corrHistorial, DATE_FORMAT(h.fecha,"%d/%m/%y") as fecha, f.nomFuncionario, d.nomDependencia From historial as h Left Join funcionario as f on f.codFuncionario = h.codFuncionario Left Join dependencia as d on d.codDependencia = h.codDependencia Where d.codDependencia = ?',req.params.dependencia,(err, rows)=>{
+        conn.query('Select DISTINCT h.corrHistorial, DATE_FORMAT(h.fecha,"%d/%m/%y") as fecha, f.nomFuncionario, d.nomDependencia, h.memo From historial as h Left Join funcionario as f on f.codFuncionario = h.codFuncionario Left Join dependencia as d on d.codDependencia = h.codDependencia Where d.codDependencia = ?',req.params.dependencia,(err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -279,7 +279,7 @@ router.get('/obtenerHistorialesDependencia/:dependencia', verificarAuth, (req, r
 router.get('/obtenerHistorialesFuncionario/:funcionario', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
-        conn.query('Select DISTINCT h.corrHistorial, DATE_FORMAT(h.fecha,"%d/%m/%y") as fecha, f.nomFuncionario, d.nomDependencia From historial as h Left Join funcionario as f on f.codFuncionario = h.codFuncionario Left Join dependencia as d on d.codDependencia = h.codDependencia Where f.codFuncionario = ?',req.params.funcionario,(err, rows)=>{
+        conn.query('Select DISTINCT h.corrHistorial, DATE_FORMAT(h.fecha,"%d/%m/%y") as fecha, f.nomFuncionario, d.nomDependencia, h.memo From historial as h Left Join funcionario as f on f.codFuncionario = h.codFuncionario Left Join dependencia as d on d.codDependencia = h.codDependencia Where f.codFuncionario = ?',req.params.funcionario,(err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
@@ -359,7 +359,7 @@ router.put('/editarProducto/:producto', verificarAuth, (req, res) => {
     console.log(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
-        conn.query('Update producto Set nomProducto = ?, marca = ?, descripcion = ? Where codigoBarra = ?',[req.body.nomProducto, req.body.marca, req.body.descripcion, req.params.producto],(err, rows)=>{
+        conn.query('Update producto Set nomProducto = ?, marca = ?, descripcion = ?, stock = ? Where codigoBarra = ?',[req.body.nomProducto, req.body.marca, req.body.descripcion, req.body.stock, req.params.producto],(err, rows)=>{
             if(err) return res.send(err)
             res.json(rows)
         })
