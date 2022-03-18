@@ -6,6 +6,19 @@ import XlsxTemplate from 'xlsx-template';
 import fs from 'fs';
 import path from 'path';
 
+import multer from 'multer'
+
+const diskstorage = multer.diskStorage({
+    destination: path.join(__dirname, '../imagenes'),
+    filename: (req, file, cb) => {
+        cb(null, req.params.id + '.jpg')
+    } 
+})
+
+const fileUpload = multer({
+    storage: diskstorage
+}).single('image')
+
 //Todas las rutas de POST
 //Agregar una ubicacion
 
@@ -130,7 +143,36 @@ router.post('/agregaProductoBodega', verificarAuth, (req,res) => {
     })
 })
 
+router.put('/subirImagen/:id', verificarAuth, fileUpload, (req,res) => {
+    req.getConnection((err, conn) => {
+        if(err) return res.send(err)
+        const data = fs.readFileSync(path.join(__dirname, '../imagenes/' + req.file.filename))
+        conn.query('Update producto Set imagen = ? Where codigoBarra = ?',[data, req.params.id],(err, rows)=>{
+            if(err) return res.send(err)
+            res.send('Imagen Guardada')
+        })
+    })  
+})
+
 //Solicitudes tipo Get
+
+//OBTENR UNA IMAGEN
+router.get('/obtenerImagen', verificarAuth, (req,res) => {
+    req.getConnection((err, conn) => {
+        if(err) return res.send(err)
+        conn.query('Select codigoBarra, imagen FROM producto','',(err, rows)=>{
+            if(err) return res.send(err)
+            rows.map(img => {
+                if(img.imagen !== null){
+                    fs.writeFileSync(path.join(__dirname,'../public/dbImagenes/' + img.codigoBarra + '.jpg'), img.imagen)
+                }
+            })
+            const imagenesDir = fs.readdirSync(path.join(__dirname,'../public/dbImagenes/'))
+            res.json(imagenesDir)
+        })
+    })  
+})
+
 //Obtener los productos
 router.get('/obtenerProductos', verificarAuth, (req, res) => {
     req.getConnection((err, conn) => {
