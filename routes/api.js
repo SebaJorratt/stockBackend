@@ -1,6 +1,7 @@
 import express from 'express'
 import { verificarAuth, verificarAdmin } from '../middlewares/autenticacion';
 const router = express.Router();
+const validations = require('../middlewares/validations')
 
 import XlsxTemplate from 'xlsx-template';
 import fs from 'fs';
@@ -23,6 +24,7 @@ const fileUpload = multer({
 //Agregar una ubicacion
 
 router.post('/agregaUbicacion', verificarAuth, (req,res) => {
+    validations.UbicacionValidate(req.body)
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
         conn.query('INSERT INTO ubicacion (comuna, direccion) VALUES (?,?)',[req.body.comuna, req.body.direccion], (err, rows)=>{
@@ -33,6 +35,7 @@ router.post('/agregaUbicacion', verificarAuth, (req,res) => {
 })
 
 router.post('/agregaDependencia', verificarAuth, (req,res) => {
+    validations.DependenciaValidate(req.body)
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
         conn.query('INSERT INTO dependencia (codDependencia, nomDependencia, tipo, corrUbicacion) VALUES (?,?,?,(SELECT MAX(corrUbicacion) AS corrUbicacion FROM ubicacion))',[req.body.codDependencia, req.body.nomDependencia, req.body.tipo], (err, rows)=>{
@@ -43,6 +46,7 @@ router.post('/agregaDependencia', verificarAuth, (req,res) => {
 })
 
 router.post('/agregaFuncionario', verificarAuth, (req,res) => {
+    validations.FuncionarioValidate(req.body)
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
         conn.query('INSERT INTO funcionario (codFuncionario, nomFuncionario, correo, rut, encargado, codDependencia) VALUES (?,?,?,?,?,(Select codDependencia FROM dependencia Where nomDependencia = ?))',[req.body.codFuncionario, req.body.nomFuncionario, req.body.correo, req.body.rut, req.body.encargado,req.body.nomDependencia], (err, rows)=>{
@@ -53,6 +57,7 @@ router.post('/agregaFuncionario', verificarAuth, (req,res) => {
 })
 
 router.post('/agregaProducto', verificarAuth, (req,res) => {
+    validations.ProductoValidate(req.body)
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
         conn.query('INSERT INTO producto (codigoBarra, nomProducto, marca, descripcion, stock) VALUES (?,?,?,?,?)',[req.body.codigoBarra, req.body.nomProducto, req.body.marca, req.body.descripcion, req.body.stock], (err, rows)=>{
@@ -84,6 +89,7 @@ router.get('/obtenerUltimoMemo', verificarAuth, (req, res) => {
 })
 
 router.post('/agregaHistorial', verificarAuth, (req,res) => {
+    validations.MemoValidate(req.body)
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
         conn.query('INSERT INTO historial (fecha, codFuncionario, codDependencia,memo) VALUES (?,(Select codFuncionario FROM funcionario Where nomFuncionario = ?),(Select codDependencia FROM dependencia Where nomDependencia = ?), ?)',[req.body.fecha, req.body.nomFuncionario, req.body.nomDependencia, req.body.memo], (err, rows)=>{
@@ -94,6 +100,7 @@ router.post('/agregaHistorial', verificarAuth, (req,res) => {
 })
 
 router.post('/agregahistProd', verificarAuth, (req,res) => {
+    validations.CantidadValidate(req.body)
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
         conn.query('INSERT INTO histprod (cantidad, codigoBarra, corrHistorial) VALUES (?,?,(SELECT MAX(corrHistorial) AS corrHistorial FROM historial))',[req.body.cantidad, req.body.codigoBarra], (err, rows)=>{
@@ -124,6 +131,7 @@ router.post('/agregaOrdenEntrega', verificarAuth, (req,res) => {
 })
 
 router.post('/agregaOrdenProducto', verificarAuth, (req,res) => {
+    validations.CantidadValidate(req.body)
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
         conn.query('INSERT INTO ordenproducto (cantidad, codOrden, codigoBarra) VALUES (?,?,?)',[req.body.cantidad, req.body.codOrden, req.body.codigoBarra], (err, rows)=>{
@@ -134,6 +142,7 @@ router.post('/agregaOrdenProducto', verificarAuth, (req,res) => {
 })
 
 router.post('/agregaProductoBodega', verificarAuth, (req,res) => {
+    validations.EntregaBodegaValidate(req.body)
     req.getConnection((err, conn)=>{
         if(err) return res.send(err)
         conn.query('INSERT INTO prodbodega (stockBodega, stockCritico, nomBodega, codigoBarra) VALUES (?,?,?,?)',[req.body.stockBodega, req.body.stockCritico,req.body.nomBodega, req.body.codigoBarra], (err, rows)=>{
@@ -386,7 +395,7 @@ router.get('/CompararStock', verificarAuth, (req, res) => {
 //PUT ACTUALIZAR ENTIDADES
 //Restar stock a un producto
 router.put('/actualizaStock/:producto', verificarAuth, (req, res) => {
-    console.log(req.body)
+    validations.CantidadValidate(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Update producto Set stock = stock - ? Where codigoBarra = ?',[req.body.cantidad, req.params.producto],(err, rows)=>{
@@ -398,7 +407,7 @@ router.put('/actualizaStock/:producto', verificarAuth, (req, res) => {
 
 //Editar un producto
 router.put('/editarProducto/:producto', verificarAuth, (req, res) => {
-    console.log(req.body)
+    validations.ProductoValidate(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Update producto Set nomProducto = ?, marca = ?, descripcion = ?, stock = ? Where codigoBarra = ?',[req.body.nomProducto, req.body.marca, req.body.descripcion, req.body.stock, req.params.producto],(err, rows)=>{
@@ -410,7 +419,7 @@ router.put('/editarProducto/:producto', verificarAuth, (req, res) => {
 
 //Actualizar Dependencia
 router.put('/editarDependencia/:dependencia', verificarAuth,  (req, res) => {
-    console.log(req.body)
+    validations.DependenciaValidate(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Update dependencia Set nomDependencia = ?, tipo = ?, corrUbicacion = (SELECT MAX(corrUbicacion) AS corrUbicacion FROM ubicacion) Where codDependencia = ?',[req.body.nomDependencia, req.body.tipo, req.params.dependencia],(err, rows)=>{
@@ -422,7 +431,7 @@ router.put('/editarDependencia/:dependencia', verificarAuth,  (req, res) => {
 
 //Actualizar Dependencia
 router.put('/editarFuncionario/:funcionario', verificarAuth, (req, res) => {
-    console.log(req.body)
+    validations.FuncionarioValidate(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Update funcionario Set nomFuncionario = ?, correo = ?, rut = ?, encargado = ?, codDependencia = (Select codDependencia FROM dependencia Where nomDependencia = ?) Where codFuncionario = ?',[req.body.nomFuncionario, req.body.correo, req.body.rut, req.body.encargado, req.body.nomDependencia, req.params.funcionario],(err, rows)=>{
@@ -434,6 +443,7 @@ router.put('/editarFuncionario/:funcionario', verificarAuth, (req, res) => {
 
 //Actualizar StockCritico
 router.put('/editarstockCritico/:producto', verificarAuth, (req, res) => {
+    validations.StockCriticoValidate(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Update prodbodega Set stockCritico = ? Where codigoBarra = ? and nomBodega = ?',[req.body.stockCritico, req.params.producto, req.body.nomBodega],(err, rows)=>{
@@ -445,7 +455,7 @@ router.put('/editarstockCritico/:producto', verificarAuth, (req, res) => {
 
 //Restar stock de bodega a un producto
 router.put('/actualizaStockBodega/:producto', verificarAuth, (req, res) => {
-    console.log(req.body)
+    validations.CantidadValidate(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Update prodbodega Set stockBodega = stockBodega - ? Where codigoBarra = ? and nomBodega = ?',[req.body.cantidad, req.params.producto, req.body.nomBodega],(err, rows)=>{
@@ -457,6 +467,7 @@ router.put('/actualizaStockBodega/:producto', verificarAuth, (req, res) => {
 
 //Sumar stock a un producto
 router.put('/actualizaStockmas/:producto', verificarAuth, (req, res) => {
+    validations.CantidadValidate(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Update producto Set stock = stock + ? Where codigoBarra = ?',[req.body.cantidad, req.params.producto],(err, rows)=>{
@@ -468,7 +479,7 @@ router.put('/actualizaStockmas/:producto', verificarAuth, (req, res) => {
 
 //Sumar stock de bodega a un producto
 router.put('/actualizaStockBodegamas/:producto', verificarAuth, (req, res) => {
-    console.log(req.body)
+    validations.CantidadValidate(req.body)
     req.getConnection((err, conn) => {
         if(err) return res.send(err)
         conn.query('Update prodbodega Set stockBodega = stockBodega + ? Where codigoBarra = ? and nomBodega = ?',[req.body.cantidad, req.params.producto, req.body.nomBodega],(err, rows)=>{
@@ -519,6 +530,13 @@ router.post('/obtenerMemo', verificarAuth, (req, res) => {
         res.json(data)
         //fs.writeFileSync('D:/inventarioInformatico/stock/stockBackend/public/test1.xlsx', data, 'binary');
     }); 
+})
+
+router.use((error, req, res, next) => {
+    res.status(400).json({
+      status: 'error',
+      message: error.message,
+    })
 })
 
 module.exports = router;
