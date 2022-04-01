@@ -18,6 +18,9 @@ function UsuarioValidate(data){
     if(!/^[a-z0-9_.]+@[a-z0-9]+\.[a-z0-9_.]+$/i.test(data.correo)){
         throw new Error('El formato del correo es erroneo')
     }
+    if(data.tipo !== 1 && data.tipo !==0 && data.tipo !== '1' && data.tipo !== '0'){
+        throw new Error('Se ingreso un tipo diferente a los 2 existentes') 
+    }
 }
 
 function PutUsuarioSinContra(data, next){
@@ -123,7 +126,7 @@ function DependenciaValidate(data, next){
     if(/^[0-9]+$/i.test(data.nomDependencia)){
         throw new Error('El nombre del jardin debe contener letras')
     }
-    if(data.tipo !== 'Clásico AD' && data.tipo !== 'Alternativo FAMILIAR' && data.tipo !== 'Alternativo LABORAL' && data.tipo !== 'PMI' && data.tipo !== 'CECI'){
+    if(data.tipo !== 'Clásico AD' && data.tipo !== 'Alternativo FAMILIAR' && data.tipo !== 'Alternativo LABORAL' && data.tipo !== 'PMI' && data.tipo !== 'CECI' && data.tipo !== 'Dirección Regional' && data.tipo !== 'Jardín Comunicacional' && data.tipo !== 'Jardín Familiar' && data.tipo !== 'Jardín Infantil Clásico' && data.tipo !== 'Jardín Laboral' && data.tipo !== 'MDS'){
         throw new Error('El tipo de la Dependencia es incorrecto')
     }
 }
