@@ -506,7 +506,6 @@ router.post('/obtenerMemo', verificarAuth, (req, res) => {
     fs.readFile(path.join(__dirname, '../public', 'test.xlsx'), function(err, data) {
         // Create a template
         var template = new XlsxTemplate(data);
-        console.log(req.body)
         // Replacements take place on first sheet
         var sheetNumber = 1;
 

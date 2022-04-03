@@ -114,7 +114,7 @@ function FuncionarioValidate(data, next){
     if(!/^[a-z0-9_.]+@[a-z0-9]+\.[a-z0-9_.]+$/i.test(data.correo)){
         throw new Error('El formato del correo es erroneo')
     }
-    if(data.encargado !== 1 && data.encargado !==0){
+    if(data.encargado !== 1 && data.encargado !==0 && data.encargado !=='0' && data.encargado !=='1'){
         throw new Error('Se ingreso un tipo diferente a los 2 existentes') 
     }
 }
